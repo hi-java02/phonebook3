@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,7 +35,7 @@ public class PhoneController {
 		//model -->data 를 보내는 방법 -->담아 놓으면 된다
 		model.addAttribute("pList", personList);
 		
-		return "/WEB-INF/views/list.jsp";
+		return "list";
 	}
 
 	
@@ -42,12 +44,12 @@ public class PhoneController {
 	public String writeFrom() {
 		System.out.println("writeForm");
 		
-		return "/WEB-INF/views/writeForm.jsp";
+		return "writeForm";
 	}
 
 	//http://localhost:8088/phonebook3/phone/write?name=황일영&hp=999-9999-9999&company=888-8888-8888
 	//등록
-	@RequestMapping(value = "write", method = {RequestMethod.GET, RequestMethod.POST})
+	@RequestMapping(value = "/write", method = {RequestMethod.GET, RequestMethod.POST})
 	public String write(@RequestParam("name") String name, 
 			            @RequestParam("hp") String hp, 
 			            @RequestParam("company") String company) {
@@ -65,27 +67,78 @@ public class PhoneController {
 	
 	
 	//수정폼 --> modifyForm
+	@RequestMapping(value = "/modifyForm", method = {RequestMethod.GET, RequestMethod.POST})
+	public String modifyForm(@RequestParam("id") int id, Model model) {
+		System.out.println("modifyForm");
+		System.out.println(id);
+		
+		PhoneDao phoneDao = new PhoneDao();
+		PersonVo personVo = phoneDao.getPerson(id);
+		
+		model.addAttribute("personVo", personVo);
+		System.out.println(personVo.toString());
+		
+		return "modifyForm";
+	}
 	
-	//수정 --> modify
 	
-	//삭제 --> delete
+	//수정 --> modify2 --> @RequestParam
+	@RequestMapping(value = "/modify2", method = {RequestMethod.GET, RequestMethod.POST})
+	public String modify2(@RequestParam("personId") int id, 
+						 @RequestParam("name") String name, 
+						 @RequestParam("hp") String hp,
+						 @RequestParam("company") String company) {
+		System.out.println("modify2");
+		
+		PersonVo personVo = new PersonVo(id, name, hp, company);
+		System.out.println(personVo.toString());
+		
+		PhoneDao phoneDao = new PhoneDao();
+		phoneDao.personUpdate(personVo);
+		
+		
+		return "redirect:/phone/list";
+	}
 	
+	
+	//수정 --> modify --> @ModelAttribute 
+	@RequestMapping(value = "/modify", method = {RequestMethod.GET, RequestMethod.POST})
+	public String modify(@ModelAttribute PersonVo personVo) {
+		System.out.println("modify");
+		
+	    System.out.println(personVo.toString());
+		
+		PhoneDao phoneDao = new PhoneDao();
+		phoneDao.personUpdate(personVo);
+		
+		
+		return "redirect:/phone/list";
+	}
+	
+	
+	//삭제 --> delete --> @RequestMapping 약식 표현
+	@RequestMapping("/delete2")
+	public String delete2(@RequestParam("personId") int id) {
+		System.out.println("delete2");
+		System.out.println(id);
+		
+		PhoneDao phoneDao = new PhoneDao();
+		phoneDao.personDelete(id);
+		
+		return "redirect:/phone/list";
+	}
 
 	
-
-	
-	
-	//등록
-	
-	//수정폼
-	
-	//수정
-	
-	//삭제
-	
-	
-	
-	
-	
+	//삭제 --> delete --> @PathVariable
+	@RequestMapping(value = "/delete/{personId}", method = {RequestMethod.GET, RequestMethod.POST})
+	public String delete(@PathVariable("personId") int id) {
+		System.out.println("delete");
+		System.out.println(id);
+		
+		PhoneDao phoneDao = new PhoneDao();
+		phoneDao.personDelete(id);
+		
+		return "redirect:/phone/list";
+	}
 	
 }
